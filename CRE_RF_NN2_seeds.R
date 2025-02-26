@@ -11,16 +11,8 @@ library(tensorflow)
 library(keras)
 set.seed(123)
 
-
-
-
-
-
-# file_path = ("path/to/gene/list/gene_list.txt")
-# file_contents <- readLines(file_path)
-
-file_contents = c("ENSG00000081019", "ENSG00000100354", "ENSG00000102081", "ENSG00000111850", "ENSG00000140839", "ENSG00000002330", "ENSG00000002726","ENSG00000002919")
-
+file_path = ("path/to/gene/list/gene_list.txt")
+file_contents <- readLines(file_path)
 df = NULL
 acc_nested_list = list()
 
@@ -71,8 +63,6 @@ for(p in file_contents) {
     test_data = test_data[, 2:length(test_data)]
     train_traget_just_log_no_norm = train_data[,ncol(train_data)]
     
-    
-    
     train_min_values <- apply(train_data, 2, min)
     train_max_values <- apply(train_data, 2, max)
     #Normalization function
@@ -86,8 +76,7 @@ for(p in file_contents) {
     
     train_data_normalized <- as.data.frame(apply(train_data, 2, normalize_min_max))
     
-    
-    
+
     #test normalization
     min_max_normalize_test <- function(data, min_values, max_values) {
       normalized_data <- data.frame(
@@ -317,3 +306,4 @@ for(p in file_contents) {
     
   }, error = function(e) {cat("ERROR:", conditionMessage(e), "\n")})
 }
+print("End of the code)
