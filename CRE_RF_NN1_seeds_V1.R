@@ -11,9 +11,6 @@ library(tensorflow)
 library(keras)
 set.seed(123)
 
-
-
-#V1 to 5600 on turing and tmux is: MLP1_N
 file_path <- "/projects/apog/work/CNN_bin/miscellaneous/kept_genes.txt"
 
 # Read the file, skipping the first row (header)
@@ -26,10 +23,7 @@ file_contents <- read.table(
 )$Gene
 
 print(file_contents[1:2])
-file_contents = file_contents[1:5600]
 print(length(file_contents))
-
-
 # Generate reproducible seeds
 set.seed(123)
 seeds <- sample(1:10000, 30)
@@ -56,7 +50,6 @@ for(p in file_contents) {
     } else{
       print("NOTTRUE")
     }
-    
     
     
     print(gene_name)
@@ -147,8 +140,6 @@ for(p in file_contents) {
     best_loss = Inf
     best_loss2 = Inf
     #--------------------------------------------------------
-
-    
 
     print("start of training")
     for (j in 1: length(dropouts)) {#j
@@ -253,8 +244,7 @@ for(p in file_contents) {
         cat(".")
       })
     
- 
-    
+
     
     ###########d) Fitting the DNN model#################
     Best_ModelFited <- Best_model %>% fit(
