@@ -1,1 +1,1 @@
-CRE MLP2 for predicting expression from H3K27ac signal
+MLP models for predicting  gene expression values from H3K27ac signal
