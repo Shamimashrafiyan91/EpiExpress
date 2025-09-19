@@ -6,7 +6,6 @@
 # ============================================================
 
 # -------------------- Libraries --------------------
-print("new version- all genes")
 library(plyr)
 library(boot)
 library(keras)
@@ -36,9 +35,7 @@ file_contents <- read.table(
   stringsAsFactors = FALSE
 )$Gene
 
-
-
-#file_contents <- readLines("/projects/apog/work/models/1MB/attention_mode/selected_genes_attention_mode.txt")
+file_contents = file_contents[1:30]
 cat("Number of genes:", length(file_contents), "\n")
 
 # Reproducible seeds for tuning
@@ -398,4 +395,4 @@ for (p in file_contents) {
   
 } # end for file_contents
 
-cat("All done NN2.\n")
+cat("All done.\n")
