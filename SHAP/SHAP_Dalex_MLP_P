@@ -1,0 +1,119 @@
+library(tidyverse)
+library(keras)
+library(dplyr)
+library(kernelshap)
+library(DALEX)
+library(future.apply)
+
+# --------------------- Normalization Function ---------------------
+normalize_min_max <- function(data) {
+  if (max(data) == min(data)) {
+    return(0)
+  }
+  return((data - min(data)) / (max(data) - min(data)))
+}
+
+# --------------------- Load MLP configuration ---------------------
+MLP <- readRDS("/projects/apog/work/models/1MB/results/Best_MLP_seeds.RDS")
+file_contents <- readLines("/projects/apog/work/models/1MB/genes_CRISPR.txt")
+
+# Load training sample names
+train_samples2 <- read.csv("/projects/apog/work/CNN_bin/miscellaneous/partition0_train.csv")
+train_samples3 <- train_samples2[, 1]
+
+# --------------------- Function to process one gene ---------------------
+process_gene <- function(gene_name) {
+  cat("Processing gene:", gene_name, "\n")
+  
+  # Load model
+  if (MLP$MLP == "NN2") {
+    model_path <- paste0("/projects/apog/work/models/1MB/new_MLP_seed/NN2/models/", gene_name, ".hdf5")
+  } else {
+    model_path <- paste0("/projects/apog/work/models/1MB/new_MLP_seed/NN1/models/", gene_name, ".hdf5")
+  }
+  my_model <- load_model_hdf5(model_path, custom_objects = NULL, compile = TRUE)
+  
+  # Load data
+  my_data <- read.table(
+    paste0("/projects/apog/work/input/IHEC_Activity_1MB_hg38/", gene_name, ".txt.gz"),
+    header = TRUE,
+    sep = "\t"
+  )
+  
+  # Preprocessing
+  df <- my_data[order(my_data$Sample), ]
+  rownames(df) <- NULL
+  df <- df[, colSums(df != 0) > 0]
+  
+  df_samples <- df[, 1]
+  df2 <- df[, 2:ncol(df)]
+  df2 <- log2(df2 + 1)
+  df3 <- cbind(df_samples, df2)
+  
+  # Filter training data
+  train_data <- df3[df3$df_samples %in% train_samples3, ]
+  sample_final <- train_data[, 1]
+  train_data <- train_data[, 2:ncol(train_data)]
+  
+  # Normalize
+  train_data_normalized <- as.data.frame(apply(train_data, 2, normalize_min_max))
+  rownames(train_data_normalized) <- sample_final
+  training <- train_data_normalized[, 1:(ncol(train_data_normalized) - 1)]
+  training_target <- train_data_normalized[, ncol(train_data_normalized)]
+  
+  # Single instance for SHAP (K562)
+  train_K562 <- training[rownames(training) == "IHECRE00001887", , drop = FALSE]
+  rownames(train_K562) <- NULL
+  train_K562 <- as.data.frame(train_K562)
+  colnames(train_K562) <- as.character(colnames(train_K562))
+  colnames(training) <- as.character(colnames(training))
+  
+  # DALEX explainer
+  explainer <- explain(
+    model = my_model,
+    data = training,
+    y = training_target,
+    label = "keras_mlp",
+    predict_function = function(m, d) predict(m, as.matrix(d))
+  )
+  
+  # Compute SHAP
+  shap_values <- predict_parts(explainer, new_observation = train_K562, type = "shap")
+  saveRDS(shap_values, file = paste0("/projects/apog/work/models/1MB/SHAP/MLP_review/values/SHAP_NN2_", gene_name, ".RDS"))
+  
+  # Aggregate SHAP
+  shap_sum <- aggregate(contribution ~ variable_name, shap_values, sum)
+  shap_sum <- shap_sum[order(-abs(shap_sum$contribution)), ]
+  saveRDS(shap_sum, file = paste0("/projects/apog/work/models/1MB/SHAP/MLP_review/sum/SUM_SHAP_NN2_", gene_name, ".RDS"))
+  
+  shap_avg <- aggregate(contribution ~ variable_name, shap_values, mean)
+  shap_avg <- shap_avg[order(-abs(shap_avg$contribution)), ]
+  saveRDS(shap_avg, file = paste0("/projects/apog/work/models/1MB/SHAP/MLP_review/average/AVG_SHAP_NN2_", gene_name, ".RDS"))
+  
+  shap_summary <- summary(shap_values)
+  write.csv(shap_summary, file = paste0("/projects/apog/work/models/1MB/SHAP/MLP_review/summary/Summary_SHAP_NN2_", gene_name, ".csv"), row.names = FALSE)
+  
+  # Waterfall plot
+  pdf(paste0("/projects/apog/work/models/1MB/SHAP/MLP_review/plots/Waterfall_", gene_name,".pdf"), width = 10, height = 5)
+  plot(shap_values)
+  dev.off()
+  
+  cat("Finished gene:", gene_name, "\n")
+  return(TRUE)
+}
+
+# --------------------- Parallel Execution ---------------------
+plan(multisession, workers = 25)  # set 25 cores
+future_lapply(file_contents, process_gene)
+
+
+
+
+# After future_lapply is done I plot them because odf doesnt work in paralization loop
+for (gene_name in file_contents) {
+  shap_values <- readRDS(paste0("/projects/apog/work/models/1MB/SHAP/MLP_review/values/SHAP_NN2_", gene_name, ".RDS"))
+  
+  pdf(paste0("/projects/apog/work/models/1MB/SHAP/MLP_review/plots/Waterfall_", gene_name,".pdf"), width = 10, height = 5)
+  plot(shap_values)
+  dev.off()
+}
