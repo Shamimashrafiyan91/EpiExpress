@@ -1,6 +1,6 @@
 # ============================================================
-# FULL PIPELINE: 1-layer MLP (100 units) + Feature Attention (R + Keras)
-# - Same as your previous code but only ONE dense layer after attention
+#1-layer MLP (100 units) + Feature Attention (R + Keras)
+
 # ============================================================
 
 # -------------------- Libraries --------------------
