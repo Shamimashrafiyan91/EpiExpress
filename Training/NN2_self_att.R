@@ -65,7 +65,7 @@ build_attention_mlp <- function(input_dim, rate1, rate2) {
   weighted_input <- layer_multiply(list(input_layer, attention_weights),
                                    name = "weighted_input")
   
-  # Your 2-layer MLP
+  # 2-layer MLP
   dense1 <- weighted_input %>%
     layer_dense(units = 100, activation = "relu", name = "dense1") %>%
     layer_dropout(rate = rate1, name = "dropout1")
