@@ -1,8 +1,6 @@
 # ============================================================
-# FULL PIPELINE: 2-layer MLP + Feature Attention (R + Keras)
-# - Keeps your data loading, normalization, tuning loops, stats
-# - Adds feature-wise attention: Dense(input_dim, softmax) + multiply
-# - Extracts & saves attention weights; plots top features
+#  2-layer MLP + Feature Attention (Keras)
+#
 # ============================================================
 
 # -------------------- Libraries --------------------
