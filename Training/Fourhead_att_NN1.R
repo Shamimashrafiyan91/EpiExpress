@@ -19,7 +19,7 @@ set.seed(123)
 tensorflow::tf$random$set_seed(123)
 
 # -------------------- Inputs --------------------
-# file_path <- "/projects/apog/work/CNN_bin/miscellaneous/kept_genes.txt"
+# file_path <- "/path/to//kept_genes.txt"
 # 
 # # Read the file, skipping the first row (header is irregular)
 # file_contents <- read.table(
@@ -32,13 +32,13 @@ tensorflow::tf$random$set_seed(123)
 
 
 
-file_contents = readLines("/projects/apog/work/models/1MB/attention_mode/selected_genes_attention_mode.txt")
+file_contents = readLines("/path/to//selected_genes_attention_mode.txt")
 
 
 parallel_vars <- c("build_multihead_attention_mlp", "dropouts", "seeds", 
                    "training", "training_target", "batchsizes", "Epochs", "j")
 
-#file_contents <- readLines("/projects/apog/work/models/1MB/attention_mode/selected_genes_attention_mode.txt")
+#file_contents <- readLines("/path/to//selected_genes_attention_mode.txt")
 cat("Number of genes:", length(file_contents), "\n")
 
 # Reproducible seeds for tuning
@@ -100,7 +100,7 @@ for (p in file_contents) {
     start_time <- Sys.time()
     
     # ---------- Load per-gene matrix ----------
-    gene_file <- paste0("/projects/apog/work/input/IHEC_Activity_1MB_hg38/", gene_name, ".txt.gz")
+    gene_file <- paste0("/path/to//", gene_name, ".txt.gz")
     if (file.exists(gene_file)) {
       cat("Loading:", gene_file, "\n")
       df <- read.table(gene_file, header = TRUE, sep = "\t")
@@ -124,8 +124,8 @@ for (p in file_contents) {
     df3 <- cbind(df_samples, df2)
     
     # Partition lists
-    test_samples <- "/projects/apog/work/CNN_bin/miscellaneous/partition0_test.csv"
-    train_samples <- "/projects/apog/work/CNN_bin/miscellaneous/partition0_train.csv"
+    test_samples <- "/path/to/partition0_test.csv"
+    train_samples <- "/path/to/partition0_train.csv"
     
     test_sample2 <- read.csv(test_samples)
     test_sample3 <- test_sample2[, 1]
@@ -286,7 +286,7 @@ for (p in file_contents) {
     )
     
     # ---------- Save model ----------
-    model_dir <- "/projects/apog/work/models/1MB/attention_mode/multihead/NN1_multi/models/"
+    model_dir <- "/path/to/NN1_multi/models/"
     dir.create(model_dir, recursive = TRUE, showWarnings = FALSE)
     name1 <- file.path(model_dir, paste0(gene_name, ".hdf5"))
     save_model_hdf5(Best_model, name1)
@@ -333,7 +333,7 @@ for (p in file_contents) {
     acc_nested_list[[p]] <- accuracy1
     
     # ---------- Save aggregate stats ----------
-    stat_dir <- "/projects/apog/work/models/1MB/attention_mode/multihead/NN1_multi/stat"
+    stat_dir <- "/path/to/NN1_multi/stat"
     dir.create(stat_dir, recursive = TRUE, showWarnings = FALSE)
     saveRDS(acc_nested_list, file.path(stat_dir, "NN1_MULTIattention_4mode.RDS"))
     
@@ -355,7 +355,7 @@ for (p in file_contents) {
     global_importance <- Reduce("+", feature_importances) / length(feature_importances)
     
     # ---- Save results ----
-    att_dir <- "/projects/apog/work/models/1MB/attention_mode/multihead/NN1_multi/weights"
+    att_dir <- "/path/to/NN1_multi/weights"
     dir.create(att_dir, recursive = TRUE, showWarnings = FALSE)
     
     # Save averaged importance
